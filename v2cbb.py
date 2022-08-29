@@ -40,7 +40,7 @@ class ModuleIO(JsonAble):
         self.name = name
         self.dir = dir
         self.width = width
-        self.shape = shape
+        self.shape = shape  # todo: shape not support at this time
         self.iotype = iotype
         pass
 
