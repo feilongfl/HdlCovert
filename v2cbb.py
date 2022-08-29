@@ -45,11 +45,15 @@ class ModuleIO(JsonAble):
         pass
 
     @staticmethod
-    def GetWidth(width: str):
-        if width == '' or width == None:
+    def GetWidth(widthstr: str):
+        if widthstr == '' or widthstr == None:
             return 1
 
-        pass
+        bit = widthstr.removeprefix('[').removesuffix(']').split(':')
+        width = int(bit[0]) - int(bit[1]) + 1
+        logger.debug("multibit: {bit}, width {width}", bit=bit, width=width)
+
+        return width
 
 
 class ModuleParameter(JsonAble):
