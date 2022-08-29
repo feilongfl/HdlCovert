@@ -1,0 +1,3 @@
+*.v.scala
+*.v.scala.json
+.metals
