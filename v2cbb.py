@@ -58,7 +58,7 @@ class ModuleIO(JsonAble):
 
 class ModuleParameter(JsonAble):
     def __init__(self) -> None:
-        self.test = "testtest"
+        # todo: parameter not support this time
         pass
 
 
