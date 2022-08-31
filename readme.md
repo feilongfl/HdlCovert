@@ -1,4 +1,4 @@
-# hdl generator
+# HdlCovert
 
 ## Introduct
 
