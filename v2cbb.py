@@ -14,8 +14,33 @@ class JsonAble:
 
 
 class ChiselAbel:
+    def genHead(self) -> None:
+        self.code = [
+            "class hpRam extends BlackBox {",
+            "  val io = IO(new Bundle {",
+        ]
+
+    def genBody(self) -> None:
+        self.code += [
+            "    //not implement"
+        ]
+
+    def genTail(self) -> None:
+        self.code += [
+            "  })",
+            "}",
+            "",
+        ]
+
+    def gen(self) -> str:
+        self.genHead()
+        self.genBody()
+        self.genTail()
+
+        return '\n'.join(self.code)
+
     def toChisel(self) -> str:
-        return "chisel => %s" % self
+        return self.gen()
 
 
 @unique
@@ -32,13 +57,13 @@ class ModuleIODir(str, Enum):
 
 
 class ModuleIO(JsonAble):
-    def __init__(self, name: str, dir: ModuleIODir, width: int = 1, shape: tuple = (1), iotype: ModuleIOType = ModuleIOType.WIRE) -> None:
+    def __init__(self, name: str, direction: ModuleIODir, width: int = 1, shape: tuple = (1), iotype: ModuleIOType = ModuleIOType.WIRE) -> None:
         # reg [7:0] name   [0:3]    [0:3];
         #  |    |     |      |        |
         # type width name shape(0) shape(1)
 
         self.name = name
-        self.dir = dir
+        self.direction = direction
         self.width = width
         self.shape = shape  # todo: shape not support at this time
         self.iotype = iotype
@@ -68,7 +93,43 @@ class Module(JsonAble, ChiselAbel):
 
         self.io = []
         self.parameter = []
+
+        # internal var
+        self.wrap = "    "
+        self.dirstrlut = {
+            'input': 'Input',
+            'output': 'Output',
+            'inout': 'Analog',
+        }
         pass
+
+    def genBodyIOLine(self, io: ModuleIO) -> str:
+        dirstr = self.dirstrlut[io.direction]
+        parastr = ''
+
+        if(io.width == 1 and (dirstr == 'Input' or dirstr == 'Output')):
+            if ('clk' in io.name):
+                parastr = 'Clock()'
+            elif ('clock' in io.name):
+                parastr = 'Clock()'
+            elif ('rst' in io.name):
+                parastr = 'Reset()'
+            elif ('reset' in io.name):
+                parastr = 'Reset()'
+            else:
+                parastr = 'Bool()'
+        elif (dirstr == 'Input' or dirstr == 'Output'):
+            parastr = 'UInt({width}.W)'.format(width=io.width)
+        elif(dirstr == 'Analog'):
+            parastr = '{width}.W'.format(width=io.width)
+
+        return "{wrap}val {name} = {dir}({para})".format(wrap=self.wrap, name=io.name, dir=dirstr, para=parastr)
+
+    def genBody(self) -> None:
+        self.code.append(self.wrap + "// IO")
+
+        for io in self.io:
+            self.code.append(self.genBodyIOLine(io))
 
 
 class Compiler:
